@@ -147,9 +147,9 @@
   input[type=file]{display:none;}
 
   .teacher-list .student-row{
-    display:flex;align-items:center;justify-content:space-between;
+    display:flex;align-items:center;justify-content:space-between;gap:8px;
     background:rgba(244,234,217,0.95); color:var(--ink);
-    border-radius:10px; padding:11px 14px; margin-bottom:8px; cursor:pointer;
+    border-radius:10px; padding:11px 14px; margin-bottom:8px;
     border:1px solid rgba(201,162,39,0.5);
   }
   .teacher-list .student-row .sname{font-weight:bold;font-size:14.5px;}
@@ -226,6 +226,13 @@ window.storage = {
     });
     if(!res.ok) throw new Error("Erreur d'écriture");
     return { key, value, shared: !!shared };
+  },
+  async delete(key, shared){
+    const res = await fetch("/.netlify/functions/aronnax-data?key=" + encodeURIComponent(key), {
+      method: "DELETE"
+    });
+    if(!res.ok) throw new Error("Erreur de suppression");
+    return { key, deleted: true, shared: !!shared };
   }
 };
 
@@ -452,6 +459,18 @@ async function openStudentDetail(slug){
   render();
 }
 
+async function deleteStudent(slug){
+  try{
+    const r = await window.storage.get("aronnax:index", true);
+    let list = r && r.value ? JSON.parse(r.value) : [];
+    list = list.filter(s => s.slug !== slug);
+    await window.storage.set("aronnax:index", JSON.stringify(list), true);
+  }catch(e){ console.error(e); }
+  try{
+    await window.storage.delete(studentKey(slug), true);
+  }catch(e){ console.error(e); }
+}
+
 // ---------- RENDER ----------
 
 function render(){
@@ -555,9 +574,10 @@ function render(){
       <p class="hint">${state.teacherStudents.length} élève(s) ont commencé le parcours.</p>
       ${state.teacherStudents.length === 0 ? `<p class="empty-msg">Aucun élève pour l'instant.</p>` :
         state.teacherStudents.map(st=>`
-          <div class="student-row" onclick="onOpenStudentDetail('${st.slug}')">
-            <span class="sname">${escapeHtml(st.name)}</span>
-            <span class="scount">Voir ›</span>
+          <div class="student-row">
+            <span class="sname" style="flex:1;cursor:pointer;" onclick="onOpenStudentDetail('${st.slug}')">${escapeHtml(st.name)}</span>
+            <span class="scount" style="cursor:pointer;margin-right:12px;" onclick="onOpenStudentDetail('${st.slug}')">Voir ›</span>
+            <button class="btn ghost small" style="border-color:#a33;color:#a33;" onclick="onDeleteStudent('${st.slug}', '${escapeHtml(st.name).replace(/'/g, "\\'")}')">Supprimer</button>
           </div>
         `).join("")
       }
@@ -640,6 +660,13 @@ function onTeacherCodeSubmit(){
 }
 function onOpenStudentDetail(slug){
   openStudentDetail(slug);
+}
+async function onDeleteStudent(slug, name){
+  const ok = confirm("Supprimer définitivement " + name + " et toutes ses photos ? Cette action est irréversible.");
+  if(!ok) return;
+  await deleteStudent(slug);
+  state.teacherStudents = state.teacherStudents.filter(s => s.slug !== slug);
+  render();
 }
 function onBackToTeacherList(){
   state.view = "teacherList";
