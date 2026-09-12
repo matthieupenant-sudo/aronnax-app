@@ -319,24 +319,6 @@ function slugify(str){
 
 function studentKey(slug){ return "aronnax:" + slug; }
 
-async function loadLocalName(){
-  try{
-    const r = await window.storage.get("aronnax-my-name", false);
-    if(r && r.value){
-      const data = JSON.parse(r.value);
-      state.studentName = data.name;
-      state.studentSlug = data.slug;
-      await loadRecord();
-      state.view = "student";
-    } else {
-      state.view = "name";
-    }
-  }catch(e){
-    state.view = "name";
-  }
-  render();
-}
-
 async function loadRecord(){
   try{
     const r = await window.storage.get(studentKey(state.studentSlug), true);
@@ -376,9 +358,6 @@ async function handleNameSubmit(name){
   const slug = slugify(name);
   state.studentName = name;
   state.studentSlug = slug;
-  try{
-    await window.storage.set("aronnax-my-name", JSON.stringify({name, slug}), false);
-  }catch(e){}
   await addToIndex(name, slug);
   await loadRecord();
   state.view = "student";
@@ -517,7 +496,6 @@ function render(){
         <div class="stat">${done}/16 étapes complètes · ${photos}/32 photos</div>
         <div class="bar-bg"><div class="bar-fill" style="width:${pct}%"></div></div>
       </div>
-      <button class="btn ghost small" onclick="onChangeStudent()">Changer</button>
     </div>
     ${STAGES.map(s=>{
       const st = stageStatus(state.record, s.id);
@@ -635,10 +613,6 @@ function onNameSubmit(){
   const v = document.getElementById("nameInput").value;
   handleNameSubmit(v);
 }
-function onChangeStudent(){
-  state.view = "name";
-  render();
-}
 function onOpenStage(id){
   state.currentStage = id;
   state.view = "stage";
@@ -673,7 +647,8 @@ function onBackToTeacherList(){
 }
 
 document.querySelectorAll(".bg-decor .side").forEach(el => el.innerHTML = svgTentacleCluster());
-loadLocalName();
+state.view = "name";
+render();
 </script>
 </body>
 </html>
