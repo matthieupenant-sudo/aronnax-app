@@ -27,9 +27,15 @@ exports.handler = async (event) => {
       return resp(200, { ok: true });
     }
 
+    if (event.httpMethod === "DELETE") {
+      const key = event.queryStringParameters && event.queryStringParameters.key;
+      if (!key) return resp(400, { error: "missing key" });
+      await store.delete(key);
+      return resp(200, { ok: true });
+    }
+
     return resp(405, { error: "method not allowed" });
   } catch (err) {
     return resp(500, { error: String((err && err.message) || err) });
   }
 };
-
