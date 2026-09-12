@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARONNAX — Carnet de voyage</title>
+<style>
+  :root{
+    --navy-deep:#071c2b;
+    --navy:#0e3049;
+    --navy-light:#164a68;
+    --teal:#1f6f78;
+    --brass:#c9a227;
+    --brass-light:#e8c766;
+    --parchment:#f4ead9;
+    --parchment-dim:#e6d8bd;
+    --ink:#1b2a33;
+    --ok:#4caf7d;
+    --warn:#d98a2b;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    min-height:100vh;
+    background:
+      radial-gradient(circle at 20% 0%, rgba(255,255,255,0.05), transparent 40%),
+      linear-gradient(180deg, var(--navy-deep), var(--navy) 45%, var(--navy-light) 100%);
+    font-family: Georgia, 'Times New Roman', serif;
+    color: var(--parchment);
+    padding-bottom: 40px;
+  }
+  .wrap{max-width:640px;margin:0 auto;padding:18px 16px 60px;}
+  header.top{
+    text-align:center;
+    padding:22px 10px 16px;
+    position:relative;
+  }
+  header.top .porthole{
+    width:64px;height:64px;margin:0 auto 8px;
+    border-radius:50%;
+    background: radial-gradient(circle at 35% 30%, #2b6b80, #072433 70%);
+    border:4px solid var(--brass);
+    box-shadow: 0 0 0 3px rgba(0,0,0,0.4), inset 0 0 12px rgba(0,0,0,0.6), 0 4px 10px rgba(0,0,0,0.4);
+    display:flex;align-items:center;justify-content:center;
+    font-size:26px;
+  }
+  header.top h1{
+    font-family:'Baskerville', Georgia, serif;
+    letter-spacing:4px;
+    font-size:28px;
+    margin:4px 0 2px;
+    color:var(--brass-light);
+    text-shadow:0 2px 4px rgba(0,0,0,0.5);
+  }
+  header.top p.sub{
+    margin:0; font-size:13px; letter-spacing:1px; color:var(--parchment-dim); font-style:italic;
+  }
+  .mode-toggle{
+    position:absolute; top:14px; right:10px;
+    font-size:11px; letter-spacing:0.5px;
+    background:rgba(0,0,0,0.25); border:1px solid rgba(201,162,39,0.5);
+    color:var(--brass-light); padding:5px 9px; border-radius:14px; cursor:pointer;
+  }
+
+  .card{
+    background: linear-gradient(180deg, rgba(244,234,217,0.98), rgba(230,216,189,0.98));
+    color: var(--ink);
+    border-radius:14px;
+    padding:22px 20px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.35), inset 0 0 0 1px rgba(201,162,39,0.4);
+    margin-bottom:16px;
+  }
+  .card h2{
+    font-size:19px; margin:0 0 6px; color:var(--navy-deep);
+  }
+  .card p.hint{font-size:13px;color:#5b5142;margin:0 0 16px;}
+
+  label.field-label{display:block;font-size:12px;letter-spacing:1px;text-transform:uppercase;color:#6b5f4a;margin-bottom:6px;}
+  input[type=text]{
+    width:100%; padding:12px 14px; border-radius:8px; border:1px solid #c9bda0;
+    font-family:Georgia,serif; font-size:16px; background:#fffdf7; color:var(--ink);
+  }
+  .btn{
+    display:inline-block; border:none; cursor:pointer;
+    background: linear-gradient(180deg, var(--brass-light), var(--brass));
+    color:#2b2205; font-weight:bold; letter-spacing:0.5px;
+    padding:12px 20px; border-radius:24px; font-size:14px;
+    box-shadow:0 3px 8px rgba(0,0,0,0.3);
+    font-family:Georgia,serif;
+  }
+  .btn:active{transform:translateY(1px);}
+  .btn.full{width:100%; text-align:center; margin-top:14px;}
+  .btn.ghost{
+    background:transparent; border:1px solid var(--brass); color:var(--brass-light); box-shadow:none;
+  }
+  .btn.small{padding:7px 12px;font-size:12px;border-radius:16px;}
+
+  .progress-wrap{
+    display:flex; align-items:center; justify-content:space-between;
+    background:rgba(0,0,0,0.25); border:1px solid rgba(201,162,39,0.4);
+    border-radius:12px; padding:12px 16px; margin-bottom:18px;
+  }
+  .progress-wrap .name{font-weight:bold;color:var(--brass-light);font-size:15px;}
+  .progress-wrap .stat{font-size:12px;color:var(--parchment-dim);}
+  .bar-bg{height:6px;background:rgba(255,255,255,0.15);border-radius:4px;overflow:hidden;margin-top:6px;width:140px;}
+  .bar-fill{height:100%;background:linear-gradient(90deg,var(--brass),var(--brass-light));}
+
+  .stage-row{
+    display:flex; align-items:center; gap:12px;
+    background: rgba(244,234,217,0.95);
+    color:var(--ink);
+    border-radius:12px; padding:12px 14px; margin-bottom:10px;
+    cursor:pointer; border:1px solid rgba(201,162,39,0.5);
+  }
+  .stage-row .num{
+    width:34px;height:34px;border-radius:50%;flex:0 0 auto;
+    background:var(--navy); color:var(--brass-light);
+    display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:14px;
+  }
+  .stage-row .num.done{background:var(--ok); color:#0b2b16;}
+  .stage-row .info{flex:1;min-width:0;}
+  .stage-row .title{font-weight:bold;font-size:14.5px;}
+  .stage-row .status{font-size:11.5px;color:#6b5f4a;}
+  .stage-row .chev{color:var(--brass);font-size:18px;}
+
+  .stage-detail .back{background:none;border:none;color:var(--navy-deep);font-size:13px;cursor:pointer;margin-bottom:10px;padding:0;font-family:Georgia,serif;}
+  .photo-slots{display:flex;gap:16px;margin-top:14px;justify-content:center;flex-wrap:wrap;}
+  .porthole-slot{
+    width:150px;
+  }
+  .porthole-slot .frame{
+    width:150px;height:150px;border-radius:50%;
+    border:6px solid var(--brass);
+    background: radial-gradient(circle at 35% 30%, #dfe9ec, #b9c6cb 75%);
+    box-shadow: inset 0 0 14px rgba(0,0,0,0.35), 0 3px 8px rgba(0,0,0,0.25);
+    display:flex;align-items:center;justify-content:center;
+    overflow:hidden; position:relative; cursor:pointer;
+  }
+  .porthole-slot .frame img{width:100%;height:100%;object-fit:cover;}
+  .porthole-slot .frame .placeholder{font-size:30px;color:#7c8a90;}
+  .porthole-slot .slot-label{text-align:center;font-size:12px;margin-top:8px;color:#5b5142;}
+  .porthole-slot .check{
+    position:absolute; bottom:6px; right:6px; background:var(--ok); color:#0b2b16;
+    border-radius:50%; width:22px;height:22px; display:flex;align-items:center;justify-content:center;
+    font-size:13px; box-shadow:0 2px 4px rgba(0,0,0,0.3);
+  }
+  input[type=file]{display:none;}
+
+  .teacher-list .student-row{
+    display:flex;align-items:center;justify-content:space-between;
+    background:rgba(244,234,217,0.95); color:var(--ink);
+    border-radius:10px; padding:11px 14px; margin-bottom:8px; cursor:pointer;
+    border:1px solid rgba(201,162,39,0.5);
+  }
+  .teacher-list .student-row .sname{font-weight:bold;font-size:14.5px;}
+  .teacher-list .student-row .scount{font-size:12px;color:#6b5f4a;}
+
+  .mini-note{font-size:11.5px;color:var(--parchment-dim);text-align:center;margin-top:18px;line-height:1.5;}
+  .empty-msg{text-align:center;color:#6b5f4a;font-size:13px;padding:20px 0;}
+
+  .bg-decor{
+    position:fixed; left:0; right:0; bottom:0; height:38vh;
+    pointer-events:none; z-index:0; opacity:0.5;
+  }
+  .bg-decor .side{position:absolute; bottom:0; width:46vw; max-width:320px; height:100%;}
+  .bg-decor .side.left{left:-40px;}
+  .bg-decor .side.right{right:-40px; transform:scaleX(-1);}
+  .wrap, header.top{position:relative; z-index:1;}
+
+  .verne-medallion{
+    width:92px;height:92px;margin:0 auto 12px;
+    filter:drop-shadow(0 3px 6px rgba(0,0,0,0.35));
+  }
+  .verne-caption{
+    text-align:center;font-size:11px;letter-spacing:1px;color:#8a7d5e;
+    font-style:italic;margin:-6px 0 14px;
+  }
+  .circus-inline{width:22px;height:18px;display:inline-block;vertical-align:-4px;margin-right:4px;}
+  .circus-card-icon{width:54px;height:44px;display:block;margin:0 auto 6px;}
+
+  .stage-desc{font-size:13.5px;color:#4a4536;line-height:1.5;margin-top:4px;}
+</style>
+</head>
+<body>
+<div class="bg-decor">
+  <div class="side left">SVG_TENTACLE</div>
+  <div class="side right">SVG_TENTACLE</div>
+</div>
+<div class="wrap" id="app"></div>
+
+<script>
+const STAGES = [
+  {id:1, title:"La gare d'Amiens", desc:"Point de départ du parcours, porte d'entrée de la ville que Jules Verne a si souvent empruntée."},
+  {id:2, title:"Le pavillon d'octroi", desc:"Un vestige de l'ancienne enceinte fiscale de la ville, sur le chemin du centre."},
+  {id:3, title:"Le square Jules Verne", desc:"Un jardin public qui porte le nom de l'écrivain, en hommage à son attachement à Amiens."},
+  {id:4, title:"Le square Montplaisir Joffre", desc:"Un espace vert du quartier où Jules Verne aimait se promener."},
+  {id:5, title:"La maison de Jules Verne", desc:"L'ancienne demeure de l'écrivain, aujourd'hui transformée en musée consacré à son œuvre."},
+  {id:6, title:"La maison du 44", desc:"Une autre adresse amiénoise liée à la vie de l'auteur."},
+  {id:7, title:"L'église Saint-Martin", desc:"Un édifice religieux emblématique du quartier où vivait Jules Verne."},
+  {id:8, title:"Le Cirque Jules Verne", desc:"Un bâtiment circulaire remarquable, dont l'écrivain fut l'un des instigateurs et qui porte aujourd'hui son nom."},
+  {id:9, title:"La bibliothèque Louis Aragon", desc:"Un lieu de savoir où l'on peut retrouver des écrits et documents liés à Jules Verne."},
+  {id:10, title:"Le musée de Picardie", desc:"Un grand musée d'Amiens que Jules Verne, conseiller municipal, a contribué à faire vivre."},
+  {id:11, title:"La Caisse d'Épargne historique", desc:"Un bâtiment du centre-ville, témoin de l'architecture de l'époque de Jules Verne."},
+  {id:12, title:"L'Hôtel de Ville", desc:"Le siège de la mairie, où Jules Verne siégea comme conseiller municipal pendant seize ans."},
+  {id:13, title:"L'ancien Théâtre", desc:"Une salle de spectacle amiénoise fréquentée par l'écrivain et sa famille."},
+  {id:14, title:"Le square Jules Boquet", desc:"Un espace vert du centre-ville sur le tracé du parcours."},
+  {id:15, title:"L'horloge Dewailly", desc:"Une horloge emblématique du centre historique d'Amiens."},
+  {id:16, title:"La cathédrale Notre-Dame d'Amiens", desc:"La plus grande cathédrale gothique de France, monument incontournable qui a marqué l'imaginaire de Jules Verne."}
+];
+const TEACHER_CODE = "aronnax";
+
+// ---------- STOCKAGE (fonction serveur Netlify + Blobs) ----------
+window.storage = {
+  async get(key, shared){
+    const res = await fetch("/.netlify/functions/aronnax-data?key=" + encodeURIComponent(key));
+    if(!res.ok) throw new Error("Erreur de lecture");
+    const data = await res.json();
+    if(data.value === null || data.value === undefined) return null;
+    return { key, value: data.value, shared: !!shared };
+  },
+  async set(key, value, shared){
+    const res = await fetch("/.netlify/functions/aronnax-data", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ key, value })
+    });
+    if(!res.ok) throw new Error("Erreur d'écriture");
+    return { key, value, shared: !!shared };
+  }
+};
+
+// ---------- ILLUSTRATIONS SVG (thème Jules Verne) ----------
+
+function svgOctopusHead(){
+  return `<svg viewBox="0 0 100 100" width="100%" height="100%">
+    <path d="M28,55 Q19,76 29,96" stroke="#8b4a9c" stroke-width="8" fill="none" stroke-linecap="round" opacity="0.92"/>
+    <path d="M37,59 Q32,82 41,99" stroke="#8b4a9c" stroke-width="8" fill="none" stroke-linecap="round" opacity="0.92"/>
+    <path d="M50,61 Q50,84 50,101" stroke="#8b4a9c" stroke-width="8" fill="none" stroke-linecap="round" opacity="0.92"/>
+    <path d="M63,59 Q68,82 59,99" stroke="#8b4a9c" stroke-width="8" fill="none" stroke-linecap="round" opacity="0.92"/>
+    <path d="M72,55 Q81,76 71,96" stroke="#8b4a9c" stroke-width="8" fill="none" stroke-linecap="round" opacity="0.92"/>
+    <ellipse cx="50" cy="42" rx="27" ry="23" fill="#9955ab"/>
+    <ellipse cx="50" cy="34" rx="26" ry="16" fill="#a866ba"/>
+    <circle cx="40" cy="38" r="5" fill="#0b2436"/>
+    <circle cx="60" cy="38" r="5" fill="#0b2436"/>
+    <circle cx="41.5" cy="36.5" r="1.4" fill="#fff"/>
+    <circle cx="61.5" cy="36.5" r="1.4" fill="#fff"/>
+  </svg>`;
+}
+
+function svgTentacleCluster(){
+  return `<svg viewBox="0 0 260 260" preserveAspectRatio="xMidYMax slice" width="100%" height="100%">
+    <g fill="none" stroke="#1f6f78" stroke-width="9" stroke-linecap="round">
+      <path d="M10,260 C0,190 70,175 48,120 C34,82 96,78 86,32"/>
+      <path d="M55,260 C48,205 112,195 92,150 C78,118 128,102 118,58"/>
+      <path d="M105,260 C108,215 160,208 142,168 C130,138 170,128 162,96"/>
+      <path d="M155,260 C165,225 205,222 192,190 C182,168 212,160 208,132"/>
+    </g>
+    <g fill="#c9a227" opacity="0.85">
+      <circle cx="48" cy="120" r="3.5"/><circle cx="86" cy="32" r="3.5"/>
+      <circle cx="92" cy="150" r="3.5"/><circle cx="118" cy="58" r="3.5"/>
+      <circle cx="142" cy="168" r="3.5"/><circle cx="162" cy="96" r="3.5"/>
+      <circle cx="192" cy="190" r="3.5"/><circle cx="208" cy="132" r="3.5"/>
+    </g>
+  </svg>`;
+}
+
+function svgVernePortrait(){
+  return `<svg viewBox="0 0 100 100" width="100%" height="100%">
+    <circle cx="50" cy="50" r="47" fill="#f4ead9" stroke="#c9a227" stroke-width="4"/>
+    <path d="M14,98 Q50,66 86,98 L86,100 L14,100 Z" fill="#1b2a33"/>
+    <path d="M36,72 Q50,80 64,72 L66,90 Q50,98 34,90 Z" fill="#2b3d47"/>
+    <rect x="43" y="58" width="14" height="16" fill="#dfc09c"/>
+    <ellipse cx="50" cy="46" rx="17" ry="20" fill="#e6cba8"/>
+    <path d="M32,42 Q31,24 50,23 Q69,24 68,42 Q65,29 50,29 Q35,29 32,42Z" fill="#352c20"/>
+    <path d="M33,48 Q32,72 50,75 Q68,72 67,48 Q67,61 50,65 Q33,61 33,48Z" fill="#352c20"/>
+    <path d="M40,58 Q50,63 60,58 L59,66 Q50,70 41,66 Z" fill="#e6cba8"/>
+    <circle cx="43.5" cy="44" r="1.6" fill="#1b2a33"/>
+    <circle cx="56.5" cy="44" r="1.6" fill="#1b2a33"/>
+    <path d="M39,39 Q43,37 47,39" stroke="#352c20" stroke-width="1.3" fill="none"/>
+    <path d="M53,39 Q57,37 61,39" stroke="#352c20" stroke-width="1.3" fill="none"/>
+    <path d="M50,44 L48,53 Q50,55 52,53" stroke="#b08e64" stroke-width="1.1" fill="none"/>
+  </svg>`;
+}
+
+function svgCircus(){
+  return `<svg viewBox="0 0 100 80" width="100%" height="100%">
+    <ellipse cx="50" cy="62" rx="44" ry="12" fill="#164a68"/>
+    <path d="M8,62 Q50,22 92,62 Z" fill="#e6d8bd" stroke="#0e3049" stroke-width="2"/>
+    <path d="M8,62 L20,62 L20,46 Q50,28 80,46 L80,62 L92,62" fill="none" stroke="#0e3049" stroke-width="1.6"/>
+    <line x1="50" y1="22" x2="50" y2="11" stroke="#0e3049" stroke-width="2"/>
+    <path d="M50,11 L63,15 L50,19 Z" fill="#c9a227"/>
+    <g stroke="#c9a227" stroke-width="2.2">
+      <line x1="14" y1="62" x2="21" y2="45"/>
+      <line x1="28" y1="62" x2="32" y2="38"/>
+      <line x1="42" y1="62" x2="42" y2="32"/>
+      <line x1="58" y1="62" x2="58" y2="32"/>
+      <line x1="72" y1="62" x2="68" y2="38"/>
+      <line x1="86" y1="62" x2="79" y2="45"/>
+    </g>
+  </svg>`;
+}
+
+let state = {
+  view: "loading", // loading | name | student | stage | teacherGate | teacherList | teacherDetail
+  studentName: "",
+  studentSlug: "",
+  record: null, // {name, etapes:{}}
+  currentStage: null,
+  teacherError: "",
+  teacherStudents: [],
+  teacherViewing: null // record of a student
+};
+
+function slugify(str){
+  return str.toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+    .replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"") || "eleve";
+}
+
+function studentKey(slug){ return "aronnax:" + slug; }
+
+async function loadLocalName(){
+  try{
+    const r = await window.storage.get("aronnax-my-name", false);
+    if(r && r.value){
+      const data = JSON.parse(r.value);
+      state.studentName = data.name;
+      state.studentSlug = data.slug;
+      await loadRecord();
+      state.view = "student";
+    } else {
+      state.view = "name";
+    }
+  }catch(e){
+    state.view = "name";
+  }
+  render();
+}
+
+async function loadRecord(){
+  try{
+    const r = await window.storage.get(studentKey(state.studentSlug), true);
+    state.record = r && r.value ? JSON.parse(r.value) : {name: state.studentName, etapes:{}};
+  }catch(e){
+    state.record = {name: state.studentName, etapes:{}};
+  }
+}
+
+async function saveRecord(){
+  try{
+    await window.storage.set(studentKey(state.studentSlug), JSON.stringify(state.record), true);
+  }catch(e){ console.error("Erreur de sauvegarde", e); }
+}
+
+async function addToIndex(name, slug){
+  try{
+    let list = [];
+    try{
+      const r = await window.storage.get("aronnax:index", true);
+      if(r && r.value) list = JSON.parse(r.value);
+    }catch(e){ list = []; }
+    if(!list.find(s=>s.slug===slug)){
+      list.push({name, slug});
+      await window.storage.set("aronnax:index", JSON.stringify(list), true);
+    } else {
+      // update name in case it changed
+      list = list.map(s=> s.slug===slug ? {name, slug} : s);
+      await window.storage.set("aronnax:index", JSON.stringify(list), true);
+    }
+  }catch(e){ console.error(e); }
+}
+
+async function handleNameSubmit(name){
+  name = name.trim();
+  if(!name) return;
+  const slug = slugify(name);
+  state.studentName = name;
+  state.studentSlug = slug;
+  try{
+    await window.storage.set("aronnax-my-name", JSON.stringify({name, slug}), false);
+  }catch(e){}
+  await addToIndex(name, slug);
+  await loadRecord();
+  state.view = "student";
+  render();
+}
+
+function compressImage(file){
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.onload = (e)=>{
+      const img = new Image();
+      img.onload = ()=>{
+        const maxDim = 720;
+        let w = img.width, h = img.height;
+        if(w > h && w > maxDim){ h = Math.round(h * maxDim/w); w = maxDim; }
+        else if(h > maxDim){ w = Math.round(w * maxDim/h); h = maxDim; }
+        const canvas = document.createElement("canvas");
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL("image/jpeg", 0.62));
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function handlePhotoPick(stageId, slot, fileInput){
+  const file = fileInput.files[0];
+  if(!file) return;
+  try{
+    const dataURL = await compressImage(file);
+    if(!state.record.etapes[stageId]) state.record.etapes[stageId] = {};
+    state.record.etapes[stageId][slot] = dataURL;
+    state.record.etapes[stageId].savedAt = new Date().toISOString();
+    state.record.name = state.studentName;
+    await saveRecord();
+    render();
+  }catch(e){
+    alert("La photo n'a pas pu être enregistrée. Réessaie.");
+  }
+}
+
+function stageStatus(record, stageId){
+  const e = record && record.etapes ? record.etapes[stageId] : null;
+  if(!e) return 0;
+  let c = 0;
+  if(e.photo1) c++;
+  if(e.photo2) c++;
+  return c;
+}
+
+function totalCompletedStages(record){
+  if(!record) return 0;
+  return STAGES.filter(s => stageStatus(record, s.id) === 2).length;
+}
+function totalPhotos(record){
+  if(!record) return 0;
+  let n=0;
+  STAGES.forEach(s=> n += stageStatus(record, s.id));
+  return n;
+}
+
+async function enterTeacherMode(code){
+  if(code !== TEACHER_CODE){
+    state.teacherError = "Code incorrect.";
+    render();
+    return;
+  }
+  state.teacherError = "";
+  try{
+    const r = await window.storage.get("aronnax:index", true);
+    state.teacherStudents = r && r.value ? JSON.parse(r.value) : [];
+  }catch(e){
+    state.teacherStudents = [];
+  }
+  state.view = "teacherList";
+  render();
+}
+
+async function openStudentDetail(slug){
+  try{
+    const r = await window.storage.get(studentKey(slug), true);
+    state.teacherViewing = r && r.value ? JSON.parse(r.value) : {name:slug, etapes:{}};
+  }catch(e){
+    state.teacherViewing = {name:slug, etapes:{}};
+  }
+  state.view = "teacherDetail";
+  render();
+}
+
+// ---------- RENDER ----------
+
+function render(){
+  const app = document.getElementById("app");
+  let modeToggleLabel = (state.view==="teacherGate"||state.view==="teacherList"||state.view==="teacherDetail") ? "Espace élève" : "Espace professeur";
+  let header = `
+    <header class="top">
+      <div class="mode-toggle" onclick="onToggleMode()">${modeToggleLabel}</div>
+      <div class="porthole">${svgOctopusHead()}</div>
+      <h1>ARONNAX</h1>
+      <p class="sub">Sur les pas de Jules Verne — Amiens</p>
+    </header>`;
+
+  let body = "";
+
+  if(state.view === "loading"){
+    body = `<div class="card"><p class="hint">Chargement…</p></div>`;
+  }
+
+  else if(state.view === "name"){
+    body = `
+    <div class="card">
+      <div class="verne-medallion">${svgVernePortrait()}</div>
+      <p class="verne-caption">« Tout ce qu'un homme est capable d'imaginer, d'autres hommes seront capables de le réaliser. » — J. Verne</p>
+      <h2>Embarquement</h2>
+      <p class="hint">Inscris ton nom pour commencer ton carnet de voyage sur le parcours Aronnax.</p>
+      <label class="field-label">Nom et prénom</label>
+      <input type="text" id="nameInput" placeholder="Ex : Camille Dupont" autofocus>
+      <button class="btn full" onclick="onNameSubmit()">Commencer l'expédition ⚓</button>
+    </div>
+    <p class="mini-note">16 étapes à découvrir, 2 photos souvenirs à prendre à chacune.</p>`;
+  }
+
+  else if(state.view === "student"){
+    const done = totalCompletedStages(state.record);
+    const photos = totalPhotos(state.record);
+    const pct = Math.round((photos/32)*100);
+    body = `
+    <div class="progress-wrap">
+      <div>
+        <div class="name">${escapeHtml(state.studentName)}</div>
+        <div class="stat">${done}/16 étapes complètes · ${photos}/32 photos</div>
+        <div class="bar-bg"><div class="bar-fill" style="width:${pct}%"></div></div>
+      </div>
+      <button class="btn ghost small" onclick="onChangeStudent()">Changer</button>
+    </div>
+    ${STAGES.map(s=>{
+      const st = stageStatus(state.record, s.id);
+      const done2 = st===2;
+      return `<div class="stage-row" onclick="onOpenStage(${s.id})">
+        <div class="num ${done2?'done':''}">${done2 ? '✓' : s.id}</div>
+        <div class="info">
+          <div class="title">${s.id===8?`<span class="circus-inline">${svgCircus()}</span>`:""}${escapeHtml(s.title)}</div>
+          <div class="status">${st===0?'Aucune photo':(st===1?'1 photo sur 2':'Complet ✓')}</div>
+        </div>
+        <div class="chev">›</div>
+      </div>`;
+    }).join("")}
+    <p class="mini-note">Ton professeur pourra consulter directement tes photos. Pense à bien cadrer chaque lieu !</p>`;
+  }
+
+  else if(state.view === "stage"){
+    const s = STAGES.find(x=>x.id===state.currentStage);
+    const e = (state.record.etapes && state.record.etapes[s.id]) || {};
+    body = `
+    <div class="card stage-detail">
+      <button class="back" onclick="onBackToList()">‹ Retour aux étapes</button>
+      ${s.id===8?`<div class="circus-card-icon">${svgCircus()}</div>`:""}
+      <h2>Étape ${s.id} — ${escapeHtml(s.title)}</h2>
+      <p class="stage-desc">${escapeHtml(s.desc)}</p>
+      <div class="photo-slots">
+        ${["photo1","photo2"].map((slot,i)=>`
+          <div class="porthole-slot">
+            <label class="frame" for="file-${slot}">
+              ${e[slot] ? `<img src="${e[slot]}"><span class="check">✓</span>` : `<span class="placeholder">📷</span>`}
+            </label>
+            <input type="file" id="file-${slot}" accept="image/*" capture="environment" onchange="onPhotoPick(${s.id}, '${slot}', this)">
+            <div class="slot-label">Photo ${i+1}</div>
+          </div>
+        `).join("")}
+      </div>
+    </div>
+    <p class="mini-note">Touche un hublot pour prendre ou choisir une photo. Elle est enregistrée automatiquement.</p>`;
+  }
+
+  else if(state.view === "teacherGate"){
+    body = `
+    <div class="card">
+      <h2>Espace professeur</h2>
+      <p class="hint">Entrez le code pour consulter le travail des élèves.</p>
+      <label class="field-label">Code d'accès</label>
+      <input type="text" id="codeInput" placeholder="Code">
+      ${state.teacherError ? `<p style="color:#a33;font-size:12.5px;margin-top:8px;">${state.teacherError}</p>` : ""}
+      <button class="btn full" onclick="onTeacherCodeSubmit()">Accéder</button>
+    </div>`;
+  }
+
+  else if(state.view === "teacherList"){
+    body = `
+    <div class="card teacher-list">
+      <h2>Élèves</h2>
+      <p class="hint">${state.teacherStudents.length} élève(s) ont commencé le parcours.</p>
+      ${state.teacherStudents.length === 0 ? `<p class="empty-msg">Aucun élève pour l'instant.</p>` :
+        state.teacherStudents.map(st=>`
+          <div class="student-row" onclick="onOpenStudentDetail('${st.slug}')">
+            <span class="sname">${escapeHtml(st.name)}</span>
+            <span class="scount">Voir ›</span>
+          </div>
+        `).join("")
+      }
+    </div>`;
+  }
+
+  else if(state.view === "teacherDetail"){
+    const rec = state.teacherViewing;
+    const done = totalCompletedStages(rec);
+    const photos = totalPhotos(rec);
+    body = `
+    <div class="card">
+      <button class="back" onclick="onBackToTeacherList()">‹ Retour à la liste</button>
+      <h2>${escapeHtml(rec.name)}</h2>
+      <p class="hint">${done}/16 étapes complètes · ${photos}/32 photos</p>
+    </div>
+    ${STAGES.map(s=>{
+      const e = (rec.etapes && rec.etapes[s.id]) || {};
+      return `<div class="card" style="padding:14px 16px;">
+        <div style="font-weight:bold;font-size:14px;color:var(--navy-deep);margin-bottom:8px;">Étape ${s.id} — ${escapeHtml(s.title)}</div>
+        <div class="photo-slots" style="gap:12px;">
+          ${["photo1","photo2"].map((slot,i)=>`
+            <div class="porthole-slot" style="width:110px;">
+              <div class="frame" style="width:110px;height:110px;">
+                ${e[slot] ? `<img src="${e[slot]}">` : `<span class="placeholder" style="font-size:22px;">—</span>`}
+              </div>
+            </div>
+          `).join("")}
+        </div>
+      </div>`;
+    }).join("")}
+    `;
+  }
+
+  app.innerHTML = header + body;
+
+  if(state.view === "name"){
+    const inp = document.getElementById("nameInput");
+    inp.addEventListener("keydown", (ev)=>{ if(ev.key==="Enter") onNameSubmit(); });
+  }
+  if(state.view === "teacherGate"){
+    const inp = document.getElementById("codeInput");
+    inp.addEventListener("keydown", (ev)=>{ if(ev.key==="Enter") onTeacherCodeSubmit(); });
+  }
+}
+
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g, (m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+// ---------- HANDLERS ----------
+function onNameSubmit(){
+  const v = document.getElementById("nameInput").value;
+  handleNameSubmit(v);
+}
+function onChangeStudent(){
+  state.view = "name";
+  render();
+}
+function onOpenStage(id){
+  state.currentStage = id;
+  state.view = "stage";
+  render();
+}
+function onBackToList(){
+  state.view = "student";
+  render();
+}
+function onPhotoPick(stageId, slot, input){
+  handlePhotoPick(stageId, slot, input);
+}
+function onToggleMode(){
+  if(state.view==="teacherGate"||state.view==="teacherList"||state.view==="teacherDetail"){
+    state.view = state.studentName ? "student" : "name";
+  } else {
+    state.teacherError = "";
+    state.view = "teacherGate";
+  }
+  render();
+}
+function onTeacherCodeSubmit(){
+  const v = document.getElementById("codeInput").value;
+  enterTeacherMode(v);
+}
+function onOpenStudentDetail(slug){
+  openStudentDetail(slug);
+}
+function onBackToTeacherList(){
+  state.view = "teacherList";
+  render();
+}
+
+document.querySelectorAll(".bg-decor .side").forEach(el => el.innerHTML = svgTentacleCluster());
+loadLocalName();
+</script>
+</body>
+</html>
