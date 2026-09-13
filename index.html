@@ -516,6 +516,7 @@ function render(){
         <div class="bar-bg"><div class="bar-fill" style="width:${pct}%"></div></div>
       </div>
     </div>
+    <a href="https://www.calameo.com/amiensmetropole/read/001202835ac1dd8b6936e?page=1" target="_blank" rel="noopener" class="btn ghost full" style="text-align:center;display:block;box-sizing:border-box;margin-bottom:16px;">🗺️ Voir la carte du parcours</a>
     ${STAGES.map(s=>{
       const st = stageStatus(state.record, s.id);
       const done2 = st===2;
@@ -547,7 +548,7 @@ function render(){
               ${e[slot] ? `<img src="${e[slot]}"><span class="check">✓</span>` : `<span class="placeholder">📷</span>`}
             </label>
             <input type="file" id="file-${slot}" accept="image/*" capture="environment" onchange="onPhotoPick(${s.id}, '${slot}', this)">
-            <div class="slot-label">Photo ${i+1}</div>
+            <div class="slot-label">${i===0?"Pupitre":"Photo de la vue"}</div>
           </div>
         `).join("")}
       </div>
